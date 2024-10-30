@@ -25,11 +25,7 @@ def gpt(system, user):
           {"role": "system", "content": system},
           {"role": "user", "content": user}
       ],
-      temperature=1,
-      max_tokens=256,
-      top_p=1,
-      frequency_penalty=0,
-      presence_penalty=0
+      max_tokens=2048,
   )
   end_time = time.time()
   latency = end_time - start_time
