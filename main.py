@@ -4,6 +4,7 @@ from datetime import datetime
 from openai import OpenAI
 import anthropic
 import google.generativeai as g_client
+from google.generativeai.types import GenerationConfig
 import pandas as pd
 from tqdm import tqdm
 import argparse
@@ -16,7 +17,7 @@ o_client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
 a_client = anthropic.Anthropic(api_key=os.getenv('ANTHROPIC_API_KEY'))
 g_client.configure(api_key=os.getenv('GEMINI_API_KEY'))
 
-def gpt(system, user):
+def gpt(system,user,temperature):
   """Make request to OpenAI flagship"""
   start_time = time.time()
   completion = o_client.chat.completions.create(
@@ -26,18 +27,20 @@ def gpt(system, user):
           {"role": "user", "content": user}
       ],
       max_tokens=2048,
+      temperature=int(temperature),
   )
   end_time = time.time()
   latency = end_time - start_time
   answer = completion.choices[0].message.content
   return answer, latency
 
-def claude(system,user):
+def claude(system,user,temperature):
   """Make request to Anthropic flagship"""
   start_time = time.time()
   message = a_client.messages.create(
       model="claude-3-5-sonnet-20241022",
       max_tokens=2048,
+      temperature=int(temperature),
       system = system,
       messages=[
           {"role": "user", "content": user}
@@ -48,11 +51,12 @@ def claude(system,user):
   answer = message.content[0].text
   return answer, latency 
 
-def gemini(system,user):
+def gemini(system,user,temperature):
   """Make request to Google flagship"""
   start_time = time.time()
   model = g_client.GenerativeModel(
     "gemini-1.5-pro", 
+    generation_config=GenerationConfig(temperature=int(temperature)),
     system_instruction=system
   )
   response = model.generate_content(user)
@@ -66,7 +70,7 @@ def load_test(file_path):
     """
     return pd.read_csv(file_path)
 
-def exam(system, user, provider, max_retries=5, retry_delay=0.5):
+def exam(system, user, provider, temperature, max_retries=5, retry_delay=0.5):
     """
     Run the exam on the test. If an error occurs attempt completion again after {retry_delay} seconds
     to a maximum of {max_retries} times.
@@ -74,11 +78,11 @@ def exam(system, user, provider, max_retries=5, retry_delay=0.5):
     for attempt in range(max_retries):
         try:
             if provider == 'openai':
-                response = gpt(system,user)
+                response = gpt(system,user,temperature)
             elif provider == 'anthropic':
-                response = claude(system,user)
+                response = claude(system,user,temperature)
             elif provider == 'google':
-                response = gemini(system,user)
+                response = gemini(system,user,temperature)
             else:
                 return "Not a valid model. Please select one of openai, anthropic or google."
             return response
@@ -91,7 +95,7 @@ def exam(system, user, provider, max_retries=5, retry_delay=0.5):
                 print("Maximum retries reached, moving to the next question.")
                 return None, None
 
-def run_test(test_data, num_runs, provider):
+def run_test(test_data, num_runs, provider, temperature):
     """Orchestration of the test and {num_runs}"""
 
     #TODO
@@ -107,7 +111,7 @@ def run_test(test_data, num_runs, provider):
     for run in tqdm(range(num_runs), desc="Runs"):
         for _, question in tqdm(test_data.iterrows(), desc="Questions", leave=False, total=len(test_data)):
             user = f"{question['Context']}\n{question['Question']}\n{question['Options']}"
-            answer, latency = exam(system, user, provider) #returns answer string and latency
+            answer, latency = exam(system, user, provider, temperature) #returns answer string and latency
             #check if the returned answer is in the Answer column of the question set
             correct = str(question['Answer']) in answer if answer else False 
             results.append({
@@ -122,11 +126,11 @@ def save_results(results, output_file):
     """Write the test results to a .csv"""
     results.to_csv(output_file, index=False)
 
-def main(test_file, num_runs, provider):
+def main(test_file, num_runs, provider, temperature):
     os.makedirs('results', exist_ok=True)
     test_data = load_test(os.path.join('tests', test_file)) #read questions to a dataframe
     now = datetime.now().strftime("%Y%m%d_%H%M%S")
-    results = run_test(test_data, num_runs, provider) #run test
+    results = run_test(test_data, num_runs, provider, temperature) #run test
     output_file = os.path.join('results', f"{provider}_{os.path.splitext(test_file)[0]}_{now}_results.csv") #create file name
     save_results(results, output_file) #save the results
     print(f"Results saved to {output_file}")
@@ -139,5 +143,6 @@ if __name__ == "__main__":
     parser.add_argument("test_file", help="Name of the test file in the tests folder")
     parser.add_argument("--num_runs", type=int, default=10, help="Number of times to run the test (default: 10)")
     parser.add_argument("--provider", type=str, default='openai', help="The LLM provider to use for this test.")
+    parser.add_argument("--temperature", type=str, default=0, help="The termperature to use for this test.")
     args = parser.parse_args()
-    main(args.test_file, args.num_runs, args.provider)
+    main(args.test_file, args.num_runs, args.provider, args.temperature)

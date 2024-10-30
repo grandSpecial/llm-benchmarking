@@ -34,7 +34,7 @@ This project benchmarks the performance of various language model providers' fla
 To run the benchmarking tool, use the following command:
 
 ```bash
-python3 main.py <test_file> --num_runs <number_of_runs> --provider <provider_name>
+python3 main.py <test_file> --num_runs <number_of_runs> --provider <provider_name> --temperature <int:temperature>
 ```
 
 ### Arguments:
@@ -42,11 +42,12 @@ python3 main.py <test_file> --num_runs <number_of_runs> --provider <provider_nam
 - `<test_file>`: The name of the CSV file containing the exam questions (must be in the `tests` folder).
 - `--num_runs`: The number of times to run the test (default: 10).
 - `--provider`: The LLM provider to use for this test (options: `openai`, `anthropic`, `google`).
+- `--temperature`: The temperature for the LLM (less (0) or more (1) random)
 
 ### Example:
 
 ```bash
-python3 main.py CDRE.csv --num_runs 10 --provider openai
+python3 main.py CDRE.csv --num_runs 10 --provider openai --temperature 0
 ```
 
 This command runs the sample exam questions in `CDRE.csv` through OpenAI’s flagship model 10 times.
