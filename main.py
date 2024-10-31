@@ -120,7 +120,7 @@ def run_test(test_data, num_runs, provider, temperature, system_prompt):
                 'System Prompt': system_prompt,
                 'Correct': int(correct), #convert bool to int to average easily
                 'Latency': latency,
-                'Generated_Response': answer[0] if answer else None
+                'Generated_Response': answer if answer else None
             })
     return pd.DataFrame(results)
 
