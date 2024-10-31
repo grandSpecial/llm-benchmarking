@@ -9,6 +9,8 @@ import pandas as pd
 from tqdm import tqdm
 import argparse
 from dotenv import load_dotenv
+import itertools
+import json
 
 # Load environment variables
 load_dotenv()
@@ -70,6 +72,14 @@ def load_test(file_path):
     """
     return pd.read_csv(file_path)
 
+def load_prompts(file_path):
+    """
+    Load system prompts from a JSON file
+    """
+    with open(file_path, 'r') as f:
+        prompts = json.load(f)
+    return list(prompts.values())
+
 def exam(system, user, provider, temperature, max_retries=5, retry_delay=0.5):
     """
     Run the exam on the test. If an error occurs attempt completion again after {retry_delay} seconds
@@ -95,28 +105,21 @@ def exam(system, user, provider, temperature, max_retries=5, retry_delay=0.5):
                 print("Maximum retries reached, moving to the next question.")
                 return None, None
 
-def run_test(test_data, num_runs, provider, temperature):
+def run_test(test_data, num_runs, provider, temperature, system_prompt):
     """Orchestration of the test and {num_runs}"""
-
-    #TODO
-    # Make this system prompt an editable argument so that 
-    # different exam questions can be benchmarked.  
-    system = """
-    You are taking the Canadian Dietetic Registration Exam.
-    A question will be given to you along with answer options.
-    The options are numbered.
-    Your response will only contain the number associated with the answer.
-    """
     results = []
     for run in tqdm(range(num_runs), desc="Runs"):
         for _, question in tqdm(test_data.iterrows(), desc="Questions", leave=False, total=len(test_data)):
             user = f"{question['Context']}\n{question['Question']}\n{question['Options']}"
-            answer, latency = exam(system, user, provider, temperature) #returns answer string and latency
+            answer, latency = exam(system_prompt, user, provider, temperature) #returns answer string and latency
             #check if the returned answer is in the Answer column of the question set
             correct = str(question['Answer']) in answer if answer else False 
             results.append({
                 'Run': run + 1,
                 'Question': question['ID'],
+                'Provider': provider,
+                'Temperature': temperature,
+                'System Prompt': system_prompt,
                 'Correct': int(correct), #convert bool to int to average easily
                 'Latency': latency
             })
@@ -126,23 +129,33 @@ def save_results(results, output_file):
     """Write the test results to a .csv"""
     results.to_csv(output_file, index=False)
 
-def main(test_file, num_runs, provider, temperature):
+def main(test_file, num_runs, providers, temperatures):
     os.makedirs('results', exist_ok=True)
     test_data = load_test(os.path.join('tests', test_file)) #read questions to a dataframe
+    prompt_file = os.path.join('tests', 'system_prompts.json') # Load prompts from the tests folder
+    system_prompts = load_prompts(prompt_file)
+    
     now = datetime.now().strftime("%Y%m%d_%H%M%S")
-    results = run_test(test_data, num_runs, provider, temperature) #run test
-    output_file = os.path.join('results', f"{provider}_{os.path.splitext(test_file)[0]}_{now}_results.csv") #create file name
-    save_results(results, output_file) #save the results
+    all_results = []
+    # Iterate over all combinations of providers, temperatures, and system prompts
+    for provider, temperature, system_prompt in itertools.product(providers, temperatures, system_prompts):
+        print(f"Running test with provider: {provider}, temperature: {temperature}, system prompt: {system_prompt[:50]}...")
+        results = run_test(test_data, num_runs, provider, temperature, system_prompt) #run test
+        all_results.append(results)
+    # Concatenate all results into a single dataframe
+    final_results = pd.concat(all_results, ignore_index=True)
+    output_file = os.path.join('results', f"combined_results_{now}.csv") #create file name
+    save_results(final_results, output_file) #save the results
     print(f"Results saved to {output_file}")
 
 if __name__ == "__main__":
-    # Example command: python3 main.py CDRE.csv --num_runs 10 --provider openai
-    # This runs the CDRE.csv exam questions through openai's flagship LLM 10 times
+    # Example command: python3 main.py CDRE.csv --num_runs 2 --providers openai anthropic google --temperatures 0 0.5 1
+    # This runs the CDRE.csv exam questions through multiple configurations
 
     parser = argparse.ArgumentParser(description="Run exam benchmark tests")
     parser.add_argument("test_file", help="Name of the test file in the tests folder")
     parser.add_argument("--num_runs", type=int, default=10, help="Number of times to run the test (default: 10)")
-    parser.add_argument("--provider", type=str, default='openai', help="The LLM provider to use for this test.")
-    parser.add_argument("--temperature", type=str, default=0, help="The termperature to use for this test.")
+    parser.add_argument("--providers", nargs='+', help="List of LLM providers to use for this test.")
+    parser.add_argument("--temperatures", nargs='+', type=float, help="List of temperatures to use for this test.")
     args = parser.parse_args()
-    main(args.test_file, args.num_runs, args.provider, args.temperature)
+    main(args.test_file, args.num_runs, args.providers, args.temperatures)
