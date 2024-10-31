@@ -73,9 +73,7 @@ def load_test(file_path):
     return pd.read_csv(file_path)
 
 def load_prompts(file_path):
-    """
-    Load system prompts from a JSON file
-    """
+    """Load system prompts from a JSON file"""
     with open(file_path, 'r') as f:
         prompts = json.load(f)
     return list(prompts.values())
@@ -121,7 +119,8 @@ def run_test(test_data, num_runs, provider, temperature, system_prompt):
                 'Temperature': temperature,
                 'System Prompt': system_prompt,
                 'Correct': int(correct), #convert bool to int to average easily
-                'Latency': latency
+                'Latency': latency,
+                'Generated_Response': answer[0] if answer else None
             })
     return pd.DataFrame(results)
 
@@ -149,7 +148,7 @@ def main(test_file, num_runs, providers, temperatures):
     print(f"Results saved to {output_file}")
 
 if __name__ == "__main__":
-    # Example command: python3 main.py CDRE.csv --num_runs 2 --providers openai anthropic google --temperatures 0 0.5 1
+    # Example command: python3 main.py CDRE.csv --num_runs 10 --providers openai anthropic --temperatures 0 0.5
     # This runs the CDRE.csv exam questions through multiple configurations
 
     parser = argparse.ArgumentParser(description="Run exam benchmark tests")
