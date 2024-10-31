@@ -73,10 +73,10 @@ def load_test(file_path):
     return pd.read_csv(file_path)
 
 def load_prompts(file_path):
-    """Load system prompts from a JSON file"""
+    """Load system prompts and names from a JSON file."""
     with open(file_path, 'r') as f:
         prompts = json.load(f)
-    return list(prompts.values())
+    return [(prompt["name"], prompt["prompt"]) for prompt in prompts["system_prompts"]]
 
 def exam(system, user, provider, temperature, max_retries=5, retry_delay=0.5):
     """
@@ -103,22 +103,22 @@ def exam(system, user, provider, temperature, max_retries=5, retry_delay=0.5):
                 print("Maximum retries reached, moving to the next question.")
                 return None, None
 
-def run_test(test_data, num_runs, provider, temperature, system_prompt):
+def run_test(test_data, num_runs, provider, temperature, system_prompt_tuple):
     """Orchestration of the test and {num_runs}"""
+    system_prompt_name, system_prompt_text = system_prompt_tuple
     results = []
     for run in tqdm(range(num_runs), desc="Runs"):
         for _, question in tqdm(test_data.iterrows(), desc="Questions", leave=False, total=len(test_data)):
             user = f"{question['Context']}\n{question['Question']}\n{question['Options']}"
-            answer, latency = exam(system_prompt, user, provider, temperature) #returns answer string and latency
-            #check if the returned answer is in the Answer column of the question set
-            correct = str(question['Answer']) in answer if answer else False 
+            answer, latency = exam(system_prompt_text, user, provider, temperature)  # Pass only the prompt text
+            correct = str(question['Answer']) in answer if answer else False
             results.append({
                 'Run': run + 1,
                 'Question': question['ID'],
                 'Provider': provider,
                 'Temperature': temperature,
-                'System Prompt': system_prompt,
-                'Correct': int(correct), #convert bool to int to average easily
+                'System Prompt': system_prompt_name,  # Store the name instead of full prompt
+                'Correct': int(correct),
                 'Latency': latency,
                 'Generated_Response': answer if answer else None
             })
@@ -130,21 +130,21 @@ def save_results(results, output_file):
 
 def main(test_file, num_runs, providers, temperatures):
     os.makedirs('results', exist_ok=True)
-    test_data = load_test(os.path.join('tests', test_file)) #read questions to a dataframe
-    prompt_file = os.path.join('tests', 'system_prompts.json') # Load prompts from the tests folder
+    test_data = load_test(os.path.join('tests', test_file))
+    prompt_file = os.path.join('tests', 'system_prompts.json')
     system_prompts = load_prompts(prompt_file)
     
     now = datetime.now().strftime("%Y%m%d_%H%M%S")
     all_results = []
-    # Iterate over all combinations of providers, temperatures, and system prompts
-    for provider, temperature, system_prompt in itertools.product(providers, temperatures, system_prompts):
-        print(f"Running test with provider: {provider}, temperature: {temperature}, system prompt: {system_prompt[:50]}...")
-        results = run_test(test_data, num_runs, provider, temperature, system_prompt) #run test
+    for provider, temperature, system_prompt_tuple in itertools.product(providers, temperatures, system_prompts):
+        system_prompt_name, _ = system_prompt_tuple
+        print(f"Running test with provider: {provider}, temperature: {temperature}, system prompt: {system_prompt_name}...")
+        results = run_test(test_data, num_runs, provider, temperature, system_prompt_tuple)
         all_results.append(results)
-    # Concatenate all results into a single dataframe
+    
     final_results = pd.concat(all_results, ignore_index=True)
-    output_file = os.path.join('results', f"combined_results_{now}.csv") #create file name
-    save_results(final_results, output_file) #save the results
+    output_file = os.path.join('results', f"combined_results_{now}.csv")
+    save_results(final_results, output_file)
     print(f"Results saved to {output_file}")
 
 if __name__ == "__main__":
