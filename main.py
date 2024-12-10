@@ -142,10 +142,10 @@ def save_results(results, output_file):
 async def main(test_file, num_runs, provider, temperature):
     os.makedirs('results', exist_ok=True)
     now = datetime.now().strftime("%Y%m%d_%H%M%S")
-    checkpoint_file = os.path.join('results', f"{provider}_{os.path.splitext(test_file)[0]}_{now}_checkpoint.csv")
+    checkpoint_file = os.path.join('results', f"{provider}_{os.path.splitext(test_file)[0]}_{now}_t{temperature}_checkpoint.csv")
     test_data = pd.read_csv(os.path.join('tests', test_file))
     results = await run_test(test_data, num_runs, provider, temperature, checkpoint_file)
-    output_file = os.path.join('results', f"{provider}_{os.path.splitext(test_file)[0]}_{now}_final.csv")
+    output_file = os.path.join('results', f"{provider}_{os.path.splitext(test_file)[0]}_{now}_t{temperature}_final.csv")
     save_results(results, output_file)
 
 if __name__ == "__main__":
