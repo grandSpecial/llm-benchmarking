@@ -107,7 +107,7 @@ async def process_question(run, question, system, provider, temperature):
     return {'Run': run + 1, 'Question': question['ID'], 'Correct': int(correct), 'Latency': latency}
 
 async def run_test(test_data, num_runs, provider, temperature, checkpoint_file):
-    """Run all tests concurrently and save progress iteratively."""
+    """Run all tests sequentially and save progress iteratively."""
     system = """
     You are taking the Canadian Dietetic Registration Exam.
     A question will be given to you along with answer options.
@@ -122,22 +122,16 @@ async def run_test(test_data, num_runs, provider, temperature, checkpoint_file):
         await f.write("Run,Question,Correct,Latency\n")
 
     for run in tqdm(range(num_runs), desc="Runs"):
-        tasks = [
-            process_question(run, question, system, provider, temperature)
-            for _, question in test_data.iterrows()
-        ]
-        # Use tqdm to show progress of questions within the run
         run_results = []
-        for coro in tqdm(asyncio.as_completed(tasks), desc=f"Processing questions for run {run + 1}", total=len(tasks), leave=False):
-            result = await coro
+        for _, question in tqdm(test_data.iterrows(), desc=f"Processing questions for run {run + 1}", total=len(test_data), leave=False):
+            result = await process_question(run, question, system, provider, temperature)
             run_results.append(result)
 
-        results.extend(run_results)
-
-        # Save progress iteratively
-        async with aiofiles.open(checkpoint_file, 'a') as f:
-            for result in run_results:
+            # Save each question's result immediately
+            async with aiofiles.open(checkpoint_file, 'a') as f:
                 await f.write(f"{result['Run']},{result['Question']},{result['Correct']},{result['Latency']}\n")
+
+        results.extend(run_results)
 
     return pd.DataFrame(results)
 
