@@ -134,7 +134,7 @@ async def run_test(test_data, num_runs, provider, temperature, checkpoint_file):
             result = await process_question(run, question, system, provider, temperature)
             run_results.append(result)
 
-            # Save each question's result immediately
+           # Save each question's result immediately
             async with aiofiles.open(checkpoint_file, 'a') as f:
                 await f.write(f"{result['Run']},{result['Question']},{result['Correct']},{result['Latency']}\n")
 
