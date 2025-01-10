@@ -10,7 +10,13 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+client = OpenAI(
+    api_key=os.getenv("OPENAI_API_KEY"),
+    default_headers={
+        "OpenAI-Beta": "assistants=v2",
+        "Content-Type": "application/json"
+    }
+)
 
 def load_test(file_path):
     """
