@@ -17,7 +17,14 @@ from groq import Groq
 # Load environment variables
 load_dotenv()
 
-o_client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+o_client = OpenAI(
+    api_key=os.getenv("OPENAI_API_KEY"),
+    default_headers={
+        "OpenAI-Beta": "assistants=v2",
+        "Content-Type": "application/json"
+    }
+)
+
 a_client = anthropic.Anthropic(api_key=os.getenv('ANTHROPIC_API_KEY'))
 g_client.configure(api_key=os.getenv('GEMINI_API_KEY'))
 d_client = OpenAI(api_key=os.getenv('DEEPSEEK_API_KEY'), base_url="https://api.deepseek.com")
@@ -213,7 +220,7 @@ async def run_test(test_data, num_runs, provider, temperature, checkpoint_file):
             result = await process_question(run, question, system, provider, temperature)
             run_results.append(result)
 
-            # Save each question's result immediately
+           # Save each question's result immediately
             async with aiofiles.open(checkpoint_file, 'a') as f:
                 await f.write(f"{result['Run']},{result['Question']},{result['Correct']},{result['Latency']}\n")
 
