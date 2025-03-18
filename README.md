@@ -27,6 +27,9 @@ This project benchmarks the performance of various language model providers' fla
     OPENAI_API_KEY=your_openai_api_key_here
     ANTHROPIC_API_KEY=your_anthropic_api_key_here
     GEMINI_API_KEY=your_gemini_api_key_here
+    GROK_API_KEY=xxx
+    GROK_API_KEY=xxx #llama's provider 
+    DEEPSEEK_API_KEY=xxx
     ```
 
 ## Usage
@@ -41,7 +44,7 @@ python3 main.py <test_file> --num_runs <number_of_runs> --provider <provider_nam
 
 - `<test_file>`: The name of the CSV file containing the exam questions (must be in the `tests` folder).
 - `--num_runs`: The number of times to run the test (default: 10).
-- `--provider`: The LLM provider to use for this test (options: `openai`, `anthropic`, `google`).
+- `--provider`: The LLM provider to use for this test (options: `openai`, `anthropic`, `google`, `etc.`).
 - `--temperature`: The temperature for the LLM (less (0) or more (1) random)
 
 ### Example:
@@ -84,10 +87,13 @@ The test file should be in CSV format with the following columns:
 - Pandas
 - tqdm
 - python-dotenv
+- & others. See requirements.txt 
+
+`$ pip install -r requirements.txt`
 
 ## License
 
 This project is licensed under the MIT License.
 
 ## Disclosure
-This file was generated using GPT-4o 
+The clean parts of this file were generated using GPT-4o 

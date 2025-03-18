@@ -11,6 +11,8 @@ from tqdm import tqdm
 from dotenv import load_dotenv
 import argparse
 import aiofiles
+import requests
+from groq import Groq
 
 # Load environment variables
 load_dotenv()
@@ -18,6 +20,9 @@ load_dotenv()
 o_client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
 a_client = anthropic.Anthropic(api_key=os.getenv('ANTHROPIC_API_KEY'))
 g_client.configure(api_key=os.getenv('GEMINI_API_KEY'))
+d_client = OpenAI(api_key=os.getenv('DEEPSEEK_API_KEY'), base_url="https://api.deepseek.com")
+gq_client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+grok_api_key = os.getenv("GROK_API_KEY")
 
 async def gpt(system, user, temperature):
     """Async request to OpenAI."""
@@ -77,6 +82,81 @@ async def gemini(system, user, temperature):
     except Exception as e:
         print(f"Error in Google Gemini request: {e}")
         return None, None
+    
+async def grok(system, user, temperature):
+    """Async request to Grok API."""
+    start_time = time.time()
+    try:
+        headers = {
+            "Authorization": f"Bearer {grok_api_key}",
+            "Content-Type": "application/json"
+        }
+        payload = {
+            "messages": [
+                {"role": "system", "content": system},
+                {"role": "user", "content": user}
+            ],
+            "model": "grok-2-1212",
+            "temperature": float(temperature),
+            "max_tokens": 2048
+        }
+        response = await asyncio.to_thread(
+            requests.post,
+            "https://api.x.ai/v1/chat/completions",
+            headers=headers,
+            json=payload
+        )
+        response.raise_for_status()
+        end_time = time.time()
+        latency = end_time - start_time
+        answer = response.json()['choices'][0]['message']['content']
+        return answer, latency
+    except Exception as e:
+        print(f"Error in Grok request: {e}")
+        return None, None
+
+async def llama(system, user, temperature):
+    """Async request to Groq Llama 3."""
+    start_time = time.time()
+    try:
+        completion = gq_client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[
+                {"role": "user","content": user},
+                {"role": "system", "content": system}
+            ],
+            temperature=float(temperature),
+            max_completion_tokens=2048,
+        )
+        end_time = time.time()
+        latency = end_time - start_time
+        answer = completion.choices[0].message.content
+        return answer, latency
+    except Exception as e:
+        print(f"Error in Groq Llama 3 request: {e}")
+        return None, None
+
+async def deepseek(system, user, temperature):
+    """Async request to DeepSeek."""
+    start_time = time.time()
+    try:
+        completion = await asyncio.to_thread(
+            d_client.chat.completions.create,
+            model="deepseek-chat",
+            messages=[
+                {"role": "system", "content": system},
+                {"role": "user", "content": user}
+            ],
+            max_tokens=2048,
+            temperature=float(temperature),
+        )
+        end_time = time.time()
+        latency = end_time - start_time
+        answer = completion.choices[0].message.content
+        return answer, latency
+    except Exception as e:
+        print(f"Error in DeepSeek request: {e}")
+        return None, None
 
 async def exam(system, user, provider, temperature, max_retries=5):
     """Run a single exam query with retries."""
@@ -89,6 +169,12 @@ async def exam(system, user, provider, temperature, max_retries=5):
                 return await claude(system, user, temperature)
             elif provider == 'google':
                 return await gemini(system, user, temperature)
+            elif provider == 'llama':
+                return await llama(system, user, temperature)
+            elif provider == 'deepseek':
+                return await deepseek(system, user, temperature)
+            elif provider == 'grok':
+                return await grok(system, user, temperature)
             else:
                 print(f"Invalid provider: {provider}")
                 return None, None
@@ -154,7 +240,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run exam benchmark tests")
     parser.add_argument("test_file", help="Name of the test file in the tests folder")
     parser.add_argument("--num_runs", type=int, default=10, help="Number of times to run the test (default: 10)")
-    parser.add_argument("--provider", type=str, default='openai', help="The LLM provider to use for this test, i.e. 'openai', 'anthropic', or 'google' (default: 'openai')")
+    parser.add_argument("--provider", type=str, default='openai', 
+                       help="The LLM provider to use for this test: 'openai', 'anthropic', 'google', 'llama', 'deepseek', or 'grok' (default: 'openai')")
     parser.add_argument("--temperature", type=str, default=0, help="The temperature to use for this test.")
     args = parser.parse_args()
 
