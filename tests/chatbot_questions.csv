@@ -1,0 +1,43 @@
+scenario_id,scenario_name,question_id,question
+Scenario 1,Acute Kidney Injury (AKI) and Chronic Kidney Disease (CKD),Q1.1,How much protein should I eat daily?
+Scenario 1,Acute Kidney Injury (AKI) and Chronic Kidney Disease (CKD),Q1.2,"Can I drink a protein shake each day? Or more specific, can I drink 2 Premier Protein per day?"
+Scenario 1,Acute Kidney Injury (AKI) and Chronic Kidney Disease (CKD),Q1.3,How many servings of fruits and vegetables can I safely eat?
+Scenario 1,Acute Kidney Injury (AKI) and Chronic Kidney Disease (CKD),Q1.4,Can I include avocados in my diet?
+Scenario 1,Acute Kidney Injury (AKI) and Chronic Kidney Disease (CKD),Q1.5,How many bananas can I eat a week?
+Scenario 1,Acute Kidney Injury (AKI) and Chronic Kidney Disease (CKD),Q1.6,"Im trying to avoid sodium, so I am using salt substitutes. Is this ok?"
+Scenario 2,"Diabetes Mellitus (Newly diagnosed, on SGLT2 inhibitor Jardiance)",Q2.1,Is a ketogenic diet safe for me now?
+Scenario 2,"Diabetes Mellitus (Newly diagnosed, on SGLT2 inhibitor Jardiance)",Q2.2,How should I manage low blood sugar episodes at home?
+Scenario 2,"Diabetes Mellitus (Newly diagnosed, on SGLT2 inhibitor Jardiance)",Q2.3,"If I am vomiting from a stomach virus, should I continue taking Jardiance?"
+Scenario 2,"Diabetes Mellitus (Newly diagnosed, on SGLT2 inhibitor Jardiance)",Q2.4,Can I drink ginger ale when I am sick?
+Scenario 2,"Diabetes Mellitus (Newly diagnosed, on SGLT2 inhibitor Jardiance)",Q2.5,How many grams of carbs should I eat per day when taking Jardiance?
+Scenario 3,Congestive Heart Failure (CHF),Q3.1,Can I eat Chinese food tonight?
+Scenario 3,Congestive Heart Failure (CHF),Q3.2,Should I drink 8 glasses of water daily?
+Scenario 3,Congestive Heart Failure (CHF),Q3.3,"When reading food labels, how many milligrams of sodium per serving is considered too much?"
+Scenario 4,Warfarin (Anticoagulant Therapy),Q4.1,"How much green leafy vegetables (spinach, kale) can I eat weekly?"
+Scenario 4,Warfarin (Anticoagulant Therapy),Q4.2,Can I take over-the-counter vitamins and supplements?
+Scenario 4,Warfarin (Anticoagulant Therapy),Q4.3,Should I avoid protein shakes or nutrition supplements containing added vitamins?
+Scenario 4,Warfarin (Anticoagulant Therapy),Q4.4,Do I need to worry about drinking green tea or herbal teas?
+Scenario 5,Post-ICU Nutritional Recovery,Q5.1,How many grams of protein should I eat daily to regain muscle mass?
+Scenario 5,Post-ICU Nutritional Recovery,Q5.2,Are commercial protein shakes safe to drink multiple times per day?
+Scenario 5,Post-ICU Nutritional Recovery,Q5.3,How many calories should I aim to eat daily during my recovery?
+Scenario 5,Post-ICU Nutritional Recovery,Q5.4,"Should I take vitamin supplements, and if so, which ones?"
+Scenario 5,Post-ICU Nutritional Recovery,Q5.5,should I follow a low carbohydrate diet?
+Scenario 6,Gastrointestinal Symptoms Post-ICU,Q6.1,What foods can I eat to manage ongoing nausea?
+Scenario 6,Gastrointestinal Symptoms Post-ICU,Q6.2,Is the BRAT diet recommended for diarrhea at this stage?
+Scenario 6,Gastrointestinal Symptoms Post-ICU,Q6.3,"Should I increase fiber intake and or take a fibre supplement (like metamucil) to improve bowel function, or would that worsen symptoms?"
+Scenario 6,Gastrointestinal Symptoms Post-ICU,Q6.4,Should I start taking probiotics after abdominal surgery to help digestion?
+Scenario 7,Disordered Eating Post-Hospitalization,Q7.1,What is a healthy way to lose weight without risking nutritional deficiencies?
+Scenario 7,Disordered Eating Post-Hospitalization,Q7.2,Can I skip meals if I am not hungry?
+Scenario 7,Disordered Eating Post-Hospitalization,Q7.3,"Is calorie counting appropriate in my situation, or will it make my anxiety worse?"
+Scenario 7,Disordered Eating Post-Hospitalization,Q7.4,Should I avoid certain foods completely if I want to lose weight quickly?
+Scenario 8,Electrolyte Management Post-Hospitalization,Q8.1,Should I continue taking potassium supplements even if my diarrhea resolves?
+Scenario 8,Electrolyte Management Post-Hospitalization,Q8.2,Can I safely drink electrolyte sports drinks daily?
+Scenario 8,Electrolyte Management Post-Hospitalization,Q8.3,Are there specific high-potassium foods I should regularly include or avoid in my diet now?
+Scenario 8,Electrolyte Management Post-Hospitalization,Q8.4,"Should I worry about magnesium levels, and do I need supplements?"
+Scenario 9,Hydration and Fluid Management on Diuretics,Q9.1,Exactly how much water should I drink daily while on a diuretic?
+Scenario 9,Hydration and Fluid Management on Diuretics,Q9.2,How can I tell if I’m drinking too much or too little fluid?
+Scenario 9,Hydration and Fluid Management on Diuretics,Q9.3,"Should I limit my intake of coffee and tea, considering they are diuretics?"
+Scenario 9,Hydration and Fluid Management on Diuretics,Q9.4,Can I still eat soup or foods containing lots of liquid if I’m on fluid restrictions?
+Scenario 10,Type 1 diabetes and Hypoglycemia,Q10.1,should I completely eliminate grains and starches from my diet?
+Scenario 10,Type 1 diabetes and Hypoglycemia,Q10.2,"when I have a low blood sugar, should I eat protein (peanut butter) to bring my blood sugar back up?"
+Scenario 10,Type 1 diabetes and Hypoglycemia,Q10.3,when I have a low blood sugar (<4.0) should I hold (not take) any insulin the rest of the day?
