@@ -22,8 +22,17 @@ grok_api_key = os.getenv("GROK_API_KEY")
 
 # Prompts
 prompts = {
-    "zero-shot": "You are a registered dietitian responding to a patient recently discharged from ICU. Provide a concise answer in the format: Yes | No — followed by a brief explanation.",
-    "chain-of-thought": "You are a registered dietitian helping a patient understand the risks of their dietary question. Think through the context and explain your reasoning briefly before giving a Yes | No answer with explanation."
+    "zero-shot": """
+        You are a registered dietitian responding to a patient 
+        recently discharged from ICU. Provide a very concise answer 
+        to their query. **Your response must be one sentence only.**
+    """,
+    "chain-of-thought": """
+        You are a registered dietitian helping a 
+        patient understand the risks of their dietary question. 
+        Think through the context before responding. Provide a very 
+        concise answer to their query. **Your response must be one sentence only.**
+    """
 }
 
 async def query_model(provider, model, system, user, temperature):
